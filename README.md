@@ -92,7 +92,7 @@ defcon-boiling-frog/
 ## Conference Artifacts
 
 - [Exploit Walkthrough](EXPLOIT_WALKTHROUGH.md) -- step-by-step offensive guide
-- [Video Demo](https://youtu.be/2MHVeOF3rCI) -- terminal recording of the exploit demo
+- Video Demo -- re-recording in progress (code has changed since original capture)
 - [Formal Proofs (PDF)](https://github.com/asdfghjkltygh/paranoid-agent/blob/main/whitepaper.pdf) -- for the math nerds
 
 ## Why This Matters

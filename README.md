@@ -101,6 +101,13 @@ A compromised auto-scaler threshold means the attacker controls when your infras
 
 There is no log entry. There is no alert. The filter worked exactly as designed.
 
+## Limitations
+
+- **Requires telemetry injection.** If the attacker can't influence the metric the agent reads (e.g., no `PutMetricData` access, no ability to generate load), the attack doesn't apply.
+- **Assumes deterministic filter pipeline.** Systems that already add random jitter to scaling decisions (rare in production, but they exist) are partially resistant.
+- **Sub-millisecond systems are out of scope.** HFT engines and inline packet inspectors operate on timescales where even 0.2ms matters. This targets infrastructure agents with 5s to 5min polling intervals.
+- **Multi-variate cross-correlation.** If the target monitors multiple correlated metrics simultaneously, injecting a probe on one metric without matching the others could be detectable.
+
 ## License
 
 MIT

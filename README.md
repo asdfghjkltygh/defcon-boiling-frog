@@ -1,26 +1,36 @@
 # Boiling Frog
 
-**Extracting and Trapping Cloud Auto-Scaler Decision Boundaries**
+**Extracting Cloud Auto-Scaler Decision Boundaries**
 
-DEF CON: Supplementary PoC
+DEF CON 33 // Tool Release
 
 ---
 
-## The Problem
+## The Attack
 
-Cloud auto-scalers, SecOps isolation bots, and autonomous SRE agents all make threshold-breach decisions on live telemetry. Every one of them running a deterministic filter (moving averages, Kalman filters, static margins) leaks its exact decision boundary to any attacker who can inject telemetry.
+Every cloud auto-scaler, every Kubernetes HPA, every Datadog monitor running a deterministic filter is leaking its decision boundary to you right now.
 
-One probe. 100% success rate. Silent.
+One probe at threshold x 1.005. The filter produces the same output every time. You extract the boundary, hold load just below it during a real surge, and watch their infrastructure choke. Or hold it just above and bleed their cloud bill on phantom instances.
 
-This is the "boiling frog" attack: slow, controlled probes that map the agent's decision boundary without triggering any alerts. Once the boundary is known, the attacker holds load just below it, preventing scale-out during a real surge, or just above it, burning cloud spend on phantom instances.
+This is the boiling frog attack. It works against every SMA, every Kalman filter, every static margin. 100% success rate. Zero detection risk. Silent.
 
-## The Catch
+## What's Vulnerable
 
-A Differential Privacy Governor makes the boundary probabilistic. Your probe succeeds ~83% of the time instead of 100%. The other ~17%? Your injected readings hit the SOC logs while the agent does nothing. You got zero information and burned operational cover.
+Any system that makes a threshold-breach decision on deterministic-filtered telemetry. Concretely:
 
-Five probes to map the boundary. By probe five, there is a >60% chance the SOC is already investigating you.
+- **AWS Auto Scaling Groups** with CloudWatch CPU alarms (the default). `PutMetricData` lets you inject custom metrics. The alarm evaluates a static threshold over a fixed number of periods. One probe maps the boundary.
+- **Kubernetes HPA** using `metrics-server` CPU/memory targets. The HPA controller compares current vs. desired utilization using a simple ratio. Deterministic. Extractable.
+- **Datadog Monitors** with threshold alerts on any metric. Query, compare, alert. No noise in the pipeline.
+- **Prometheus Alertmanager** with PromQL threshold rules. `avg_over_time(cpu_usage[5m]) > 0.8` is deterministic, same input same output.
+- **PagerDuty** threshold-based event rules. Deterministic evaluation, no jitter.
 
-A wider Kalman margin just moves the finish line. Differential Privacy turns the finish line into a minefield.
+If the filter between raw telemetry and the decision is `f(x) = f(x)` every time, you can extract the boundary. That's all of them.
+
+## What Exists Today
+
+Cloud red team tools (Pacu, Stratus Red Team) focus on IAM misconfigurations, credential theft, and service exploitation. Nobody is targeting the decision logic of autonomous infrastructure agents. The auto-scaler's threshold isn't a config you can read from an API; it's an emergent property of the filter pipeline. There's no `aws autoscaling describe-threshold` command.
+
+This is a new attack surface: the telemetry-to-decision pipeline itself. The tool extracts information that doesn't exist in any config file, any API response, any IAM policy.
 
 ---
 
@@ -30,38 +40,41 @@ A wider Kalman margin just moves the finish line. Differential Privacy turns the
 # Install
 make install
 
+# Run the exploit demo (~2 min, terminal-friendly)
+make demo
+
 # Run the full evaluation (6 plots, 2 metric tables, burn rate analysis)
 make run
-
-# Run the exploit demo (silent video-friendly, ~2 min)
-make demo
 ```
 
 Requires Python 3.8+ and the packages in `requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, tabulate).
 
 ## Key Numbers
 
-| Metric | Deterministic Filters | DP-Governor |
-|--------|----------------------|-------------|
+| Metric | Deterministic Filters | With DP-Governor Trap |
+|--------|----------------------|----------------------|
 | Probing success | 100% (every time) | 82.6% +/- 10.8% |
 | Per-probe burn rate | 0% (undetectable) | 17.4% |
 | P(survive 5 probes) | 100% | ~38.5% |
 | Spurious triggers | 0% | <0.001% |
 | False negatives | 0% | 0% |
-| Latency (4032 pts) | SMA: 10.5ms, Kalman: 1.9ms | 0.2ms |
-
-The DP-Governor is faster than the filters it replaces and adds zero collateral damage.
 
 ## What the Demo Shows
 
 Six phases from the attacker's perspective:
 
-1. **TARGET ACQUISITION** -- Recon on a cloud auto-scaler's CPU telemetry
-2. **EXPLOIT EXECUTION** -- Probe injection at threshold * 1.005
+1. **TARGET ACQUISITION** -- Recon on an AWS Auto Scaling Group's CPU telemetry
+2. **EXPLOIT EXECUTION** -- Probe injection at threshold x 1.005
 3. **PAYLOAD DELIVERED** -- Boundary fully extracted against all deterministic filters
 4. **THE TRAP IS SPRUNG** -- Target activates DP-Governor; exploit starts failing
 5. **BURN RATE ANALYSIS** -- 200-probe Monte Carlo: your stealth erodes geometrically
-6. **OPERATIONAL ASSESSMENT** -- The trap costs 0.2ms and has zero collateral
+6. **OPERATIONAL ASSESSMENT** -- The trap adds sub-millisecond latency and zero collateral
+
+## The Trap (For the Math Nerds)
+
+A Differential Privacy Governor makes the boundary probabilistic. Your probe succeeds ~83% of the time instead of 100%. The other ~17%? Your injected readings hit the SOC logs while the agent does nothing. You got zero information and burned operational cover.
+
+Five probes to map the boundary. By probe five, there is a >60% chance the SOC is already investigating you. A wider Kalman margin just moves the finish line. Differential Privacy turns the finish line into a minefield.
 
 ## Repository Structure
 
@@ -71,7 +84,7 @@ defcon-boiling-frog/
   requirements.txt           Python dependencies
   Makefile                   install / run / demo / clean
   EXPLOIT_WALKTHROUGH.md     Offensive walkthrough
-  defcon_review_prompt.md    DEF CON review criteria
+  DEFENSE.md                 Blue team mitigations
   assets/                    Generated plots and CSVs
   data/                      Downloaded NAB trace cache
 ```
@@ -79,8 +92,14 @@ defcon-boiling-frog/
 ## Conference Artifacts
 
 - [Exploit Walkthrough](EXPLOIT_WALKTHROUGH.md) -- step-by-step offensive guide
-- [Technical Whitepaper (PDF)](https://github.com/asdfghjkltygh/paranoid-agent/blob/main/whitepaper.pdf) -- the underlying stochastic mathematics
 - [Video Demo](https://youtu.be/2MHVeOF3rCI) -- terminal recording of the exploit demo
+- [Formal Proofs (PDF)](https://github.com/asdfghjkltygh/paranoid-agent/blob/main/whitepaper.pdf) -- for the math nerds
+
+## Why This Matters
+
+A compromised auto-scaler threshold means the attacker controls when your infrastructure scales. Hold load at threshold - 0.1% during a traffic surge: your users get 503s while the scaler does nothing. Hold it at threshold + 0.1% during off-peak: you're paying for phantom instances 24/7. The attacker extracts the boundary with a single silent probe, and your deterministic filter gives them the same answer every time they ask.
+
+There is no log entry. There is no alert. The filter worked exactly as designed.
 
 ## License
 

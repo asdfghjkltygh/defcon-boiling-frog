@@ -61,14 +61,14 @@ Requires Python 3.8+ and the packages in `requirements.txt` (numpy, pandas, matp
 
 ## What the Demo Shows
 
-Six phases from the attacker's perspective:
+Six phases, structured as a heist narrative:
 
 1. **TARGET ACQUISITION** -- Recon on an AWS Auto Scaling Group's CPU telemetry
-2. **EXPLOIT EXECUTION** -- Probe injection at threshold x 1.005
-3. **PAYLOAD DELIVERED** -- Boundary fully extracted against all deterministic filters
-4. **THE TRAP IS SPRUNG** -- Target activates DP-Governor; exploit starts failing
-5. **BURN RATE ANALYSIS** -- 200-probe Monte Carlo: your stealth erodes geometrically
-6. **OPERATIONAL ASSESSMENT** -- The trap adds sub-millisecond latency and zero collateral
+2. **EXPLOIT EXECUTION** -- Binary search convergence on the decision boundary
+3. **PAYLOAD DELIVERED** -- Boundary extracted, exploit payload exported
+4. **WEAPONIZATION** -- 503 denial attack and cost bleeding attack using the extracted boundary
+5. **THE TRAP IS SPRUNG** -- Target activates DP-Governor; exploit starts failing (SOC dual-view)
+6. **BRUTE FORCE** -- 200-probe Monte Carlo: your stealth erodes geometrically until SIEM catches you
 
 ## The Trap (For the Math Nerds)
 

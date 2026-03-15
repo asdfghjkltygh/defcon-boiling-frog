@@ -68,7 +68,7 @@ Six phases, structured as a heist narrative:
 3. **PAYLOAD DELIVERED** -- Boundary extracted, exploit payload exported
 4. **WEAPONIZATION** -- 503 denial attack and cost bleeding attack using the extracted boundary
 5. **THE TRAP IS SPRUNG** -- Target activates DP-Governor; exploit starts failing (SOC dual-view)
-6. **BRUTE FORCE** -- 200-probe Monte Carlo: your stealth erodes geometrically until SIEM catches you
+6. **BRUTE FORCE** -- 200-probe brute-force extraction: your stealth erodes geometrically until SIEM catches you
 
 ## The Trap (For the Math Nerds)
 

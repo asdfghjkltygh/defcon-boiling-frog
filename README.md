@@ -80,7 +80,7 @@ Five probes to map the boundary. By probe five, there is a >60% chance the SOC i
 
 ```
 defcon-boiling-frog/
-  boiling_frog_exploit.py    Main PoC (~2600 lines)
+  boiling_frog_exploit.py    Main PoC (~2700 lines)
   requirements.txt           Python dependencies
   Makefile                   install / run / demo / clean
   EXPLOIT_WALKTHROUGH.md     Offensive walkthrough

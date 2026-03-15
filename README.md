@@ -66,7 +66,7 @@ Six phases, structured as a heist narrative:
 1. **TARGET ACQUISITION** -- Recon on an AWS Auto Scaling Group's CPU telemetry
 2. **EXPLOIT EXECUTION** -- Binary search convergence on the decision boundary
 3. **PAYLOAD DELIVERED** -- Boundary extracted, exploit payload exported
-4. **WEAPONIZATION** -- 503 denial attack and cost bleeding attack using the extracted boundary
+4. **WEAPONIZATION** -- Denial of Wallet: force phantom instances during off-peak, prevent scale-in
 5. **THE TRAP IS SPRUNG** -- Target activates DP-Governor; exploit starts failing (SOC dual-view)
 6. **BRUTE FORCE** -- 200-probe brute-force extraction: your stealth erodes geometrically until SIEM catches you
 
@@ -98,7 +98,7 @@ defcon-boiling-frog/
 
 ## Why This Matters
 
-A compromised auto-scaler threshold means the attacker controls when your infrastructure scales. Hold load at threshold - 0.1% during a traffic surge: your users get 503s while the scaler does nothing. Hold it at threshold + 0.1% during off-peak: you're paying for phantom instances 24/7. The attacker extracts the boundary with a single silent probe, and your deterministic filter gives them the same answer every time they ask.
+A compromised auto-scaler threshold means the attacker controls when your infrastructure scales. Hold load just above the threshold during off-peak: phantom instances spin up and stay up. The auto-scaler did exactly what it was designed to do, and you're paying for a fleet that serves no real traffic. The attacker extracts the boundary with a single silent probe, and your deterministic filter gives them the same answer every time they ask.
 
 There is no log entry. There is no alert. The filter worked exactly as designed.
 

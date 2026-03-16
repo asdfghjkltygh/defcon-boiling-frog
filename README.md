@@ -41,13 +41,22 @@ This is a new attack surface: the telemetry-to-decision pipeline itself. The too
 make install
 
 # Run the exploit demo (~2 min, terminal-friendly)
-make demo
+make attack
 
 # Run the full evaluation (6 plots, 2 metric tables, burn rate analysis)
 make run
 ```
 
-Requires Python 3.8+ and the packages in `requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, tabulate).
+## Dependencies
+
+**Weapon** (the exploit payload you copy-paste):
+- [vegeta](https://github.com/tsenart/vegeta) -- HTTP load generator
+- [jq](https://github.com/jqlang/jq) -- JSON telemetry parsing
+- bash, python3 (cache-busting URL generator)
+
+**Simulation** (runs the demo and evaluation):
+- Python 3.8+
+- `pip install -r requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, tabulate)
 
 ## Key Numbers
 
@@ -67,7 +76,7 @@ Six phases, structured as a heist narrative:
 2. **EXPLOIT EXECUTION** -- Binary search convergence on the decision boundary
 3. **PAYLOAD DELIVERED** -- Boundary extracted, exploit payload exported
 4. **WEAPONIZATION** -- Denial of Wallet: force phantom instances during off-peak, prevent scale-in
-5. **THE TRAP IS SPRUNG** -- Target activates DP-Governor; exploit starts failing (SOC dual-view)
+5. **THE TRAP IS SPRUNG** -- Scenario pivot: what if the target has a DP-Governor? Exploit starts failing (SOC dual-view)
 6. **BRUTE FORCE** -- 200-probe brute-force extraction: your stealth erodes geometrically until SIEM catches you
 
 ## The Trap (For the Math Nerds)
@@ -82,7 +91,7 @@ Five probes to map the boundary. By probe five, there is a >60% chance the SOC i
 defcon-boiling-frog/
   boiling_frog_exploit.py    Main PoC (~2700 lines)
   requirements.txt           Python dependencies
-  Makefile                   install / run / demo / clean
+  Makefile                   install / run / attack / clean
   EXPLOIT_WALKTHROUGH.md     Offensive walkthrough
   DEFENSE.md                 Blue team mitigations
   .github/workflows/ci.yml   CI smoke test

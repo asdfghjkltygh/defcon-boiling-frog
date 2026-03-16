@@ -1,4 +1,4 @@
-.PHONY: install run demo clean
+.PHONY: install run attack clean
 
 install:
 	pip install -r requirements.txt
@@ -6,7 +6,7 @@ install:
 run:
 	python boiling_frog_exploit.py
 
-demo:
+attack:
 	python boiling_frog_exploit.py --demo
 
 clean:

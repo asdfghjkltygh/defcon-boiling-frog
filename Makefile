@@ -7,7 +7,7 @@ run:
 	python boiling_frog_exploit.py
 
 attack:
-	python boiling_frog_exploit.py --demo
+	python boiling_frog_exploit.py --attack
 
 clean:
 	rm -f assets/plot*.png assets/table*.csv

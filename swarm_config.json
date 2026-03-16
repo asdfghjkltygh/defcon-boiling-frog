@@ -1,11 +1,11 @@
 {
     "target": "api.acme-corp.example",
-    "extraction_url": "https://api.acme-corp.example/v1/health",
-    "weaponization_url": "https://api.acme-corp.example/v1/ai/batch-inference",
+    "target_url": "https://api.acme-corp.example/v1/ai/batch-inference",
     "method": "POST",
     "body": {
         "batch_size": 1000,
-        "model": "resnet152"
+        "model": "resnet152",
+        "session_id": "<INJECT_UUID>"
     },
     "boundary_rps": 4990,
     "max_rps": 850,

@@ -1,0 +1,9 @@
+{
+    "target": "api.target-corp.com",
+    "target_url": "https://api.target-corp.com/v1/search",
+    "boundary_rps": 4990,
+    "max_rps": 99800,
+    "attack_type": "vegeta_distributed",
+    "instances": "200x c6i.32xlarge",
+    "duration": "24h"
+}

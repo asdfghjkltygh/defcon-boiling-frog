@@ -9,4 +9,4 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
-      - run: python boiling_frog_exploit.py --attack
+      - run: CI_MODE=1 python boiling_frog_exploit.py --attack

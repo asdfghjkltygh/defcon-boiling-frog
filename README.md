@@ -24,7 +24,7 @@ Any system that makes a threshold-breach decision on deterministic-filtered tele
 - **Prometheus Alertmanager** with PromQL threshold rules. `avg_over_time(cpu_usage[5m]) > 0.8` is deterministic, same input same output.
 - **PagerDuty** threshold-based event rules. Deterministic evaluation, no jitter.
 
-If the filter between raw telemetry and the decision is `f(x) = f(x)` every time, you can extract the boundary. That's all of them.
+If the filter is deterministic (same input, same output, every time) you can extract the boundary. That's all of them.
 
 ## What Exists Today
 
@@ -55,7 +55,7 @@ make run
 - bash, python3 (cache-busting URL generator)
 
 **Simulation** (runs the demo and evaluation):
-- Python 3.8+
+- Python 3.9+
 - `pip install -r requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, scipy, tabulate)
 
 ## Key Numbers
@@ -93,6 +93,7 @@ defcon-boiling-frog/
   requirements.txt           Python dependencies
   Makefile                   install / run / attack / clean
   swarm_deploy.sh            Per-node C2 deployment script
+  swarm_config.json          Swarm target/rate configuration
   EXPLOIT_WALKTHROUGH.md     Offensive walkthrough
   DEFENSE.md                 Blue team mitigations
   .github/workflows/ci.yml   CI smoke test

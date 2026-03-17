@@ -56,7 +56,7 @@ make run
 
 **Simulation** (runs the demo and evaluation):
 - Python 3.8+
-- `pip install -r requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, tabulate)
+- `pip install -r requirements.txt` (numpy, pandas, matplotlib, seaborn, scikit-learn, scipy, tabulate)
 
 ## Key Numbers
 

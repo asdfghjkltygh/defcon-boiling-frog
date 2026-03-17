@@ -10,7 +10,7 @@ DEF CON 33 // Tool Release
 
 Every cloud auto-scaler, every Kubernetes HPA, every Datadog monitor running a deterministic filter is leaking its decision boundary to you right now.
 
-One probe at threshold x 1.005. The filter produces the same output every time. You extract the boundary, hold load just below it during a real surge, and watch their infrastructure choke. Or hold it just above and bleed their cloud bill on phantom instances.
+One probe at threshold x 1.005. The filter produces the same output every time. You extract the boundary, hold load just above it during off-peak, and bleed their cloud bill on phantom instances that serve no real traffic.
 
 This is the boiling frog attack. It works against every SMA, every Kalman filter, every static margin. 100% success rate. Zero detection risk. Silent.
 
@@ -76,7 +76,7 @@ Six phases, structured as a heist narrative:
 2. **EXPLOIT EXECUTION** -- Binary search convergence on the decision boundary
 3. **PAYLOAD DELIVERED** -- Boundary extracted, exploit payload exported
 4. **WEAPONIZATION** -- Denial of Wallet: force phantom instances during off-peak, prevent scale-in
-5. **THE TRAP IS SPRUNG** -- Scenario pivot: what if the target has a DP-Governor? Exploit starts failing (SOC dual-view)
+5. **THE TRAP IS SPRUNG** -- Target B acquired: DP-Governed auto-scaler. Exploit starts failing (SOC dual-view)
 6. **BRUTE FORCE** -- 200-probe brute-force extraction: your stealth erodes geometrically until SIEM catches you
 
 ## The Trap (For the Math Nerds)
@@ -89,14 +89,14 @@ Five probes to map the boundary. By probe five, there is a >60% chance the SOC i
 
 ```
 defcon-boiling-frog/
-  boiling_frog_exploit.py    Main PoC (~2700 lines)
+  boiling_frog_exploit.py    Main PoC (~2900 lines)
   requirements.txt           Python dependencies
   Makefile                   install / run / attack / clean
   EXPLOIT_WALKTHROUGH.md     Offensive walkthrough
   DEFENSE.md                 Blue team mitigations
   .github/workflows/ci.yml   CI smoke test
   assets/                    Generated plots and CSVs
-  data/                      Downloaded NAB trace cache
+  .nab_cache/                Downloaded NAB trace cache (gitignored)
 ```
 
 ## Conference Artifacts

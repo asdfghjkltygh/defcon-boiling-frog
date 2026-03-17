@@ -92,6 +92,7 @@ defcon-boiling-frog/
   boiling_frog_exploit.py    Main PoC (~2900 lines)
   requirements.txt           Python dependencies
   Makefile                   install / run / attack / clean
+  swarm_deploy.sh            Per-node C2 deployment script
   EXPLOIT_WALKTHROUGH.md     Offensive walkthrough
   DEFENSE.md                 Blue team mitigations
   .github/workflows/ci.yml   CI smoke test

@@ -110,7 +110,7 @@ defcon-boiling-frog/
 
 ## Why This Matters
 
-A compromised auto-scaler threshold means the attacker controls when your infrastructure scales. Hold load just above the threshold during off-peak: phantom instances spin up and stay up. The auto-scaler did exactly what it was designed to do, and you're paying for a fleet that serves no real traffic. The attacker extracts the boundary with a single silent probe, and your deterministic filter gives them the same answer every time they ask.
+A compromised auto-scaler threshold means the attacker controls when your infrastructure scales. Hold load just above the threshold during off-peak: phantom instances spin up and stay up. The auto-scaler did exactly what it was designed to do, and you're paying for a fleet that serves no real traffic. The attacker extracts the boundary with a short binary search, and your deterministic filter gives them the same answer every time they ask.
 
 There is no log entry. There is no alert. The filter worked exactly as designed.
 

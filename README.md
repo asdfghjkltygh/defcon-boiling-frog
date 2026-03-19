@@ -18,7 +18,7 @@ This is the boiling frog attack. It works against every SMA, every Kalman filter
 
 Any system that makes a threshold-breach decision on deterministic-filtered telemetry. Concretely:
 
-- **AWS Auto Scaling Groups** with CloudWatch CPU alarms (the default). `PutMetricData` lets you inject custom metrics. The alarm evaluates a static threshold over a fixed number of periods. One probe maps the boundary.
+- **AWS Auto Scaling Groups** with CloudWatch CPU alarms (the default). `PutMetricData` lets you inject custom metrics. The alarm evaluates a static threshold over a fixed number of periods. A binary search maps the boundary.
 - **Kubernetes HPA** using `metrics-server` CPU/memory targets. The HPA controller compares current vs. desired utilization using a simple ratio. Deterministic. Extractable.
 - **Datadog Monitors** with threshold alerts on any metric. Query, compare, alert. No noise in the pipeline.
 - **Prometheus Alertmanager** with PromQL threshold rules. `avg_over_time(cpu_usage[5m]) > 0.8` is deterministic, same input same output.

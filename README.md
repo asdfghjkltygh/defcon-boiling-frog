@@ -10,7 +10,7 @@ DEF CON 33 // Tool Release
 
 Every cloud auto-scaler, every Kubernetes HPA, every Datadog monitor running a deterministic filter is leaking its decision boundary to you right now.
 
-One probe at threshold x 1.005. The filter produces the same output every time. You extract the boundary, hold load just above it during off-peak, and bleed their cloud bill on phantom instances that serve no real traffic.
+A fast binary search extracts the boundary. Once mapped, a single probe at threshold x 1.005 proves the filter produces the same output every time. You hold load just above it during off-peak, and bleed their cloud bill on phantom instances that serve no real traffic.
 
 This is the boiling frog attack. It works against every SMA, every Kalman filter, every static margin. 100% success rate. Zero detection risk. Silent.
 

@@ -98,6 +98,7 @@ defcon-boiling-frog/
   DEFENSE.md                 Blue team mitigations
   .github/workflows/ci.yml   CI smoke test
   assets/                    Generated plots and CSVs
+  LICENSE                    MIT
   .nab_cache/                Downloaded NAB trace cache (gitignored)
 ```
 

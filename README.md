@@ -10,7 +10,7 @@ DEF CON 33 // Tool Release
 
 Every cloud auto-scaler, every Kubernetes HPA, every Datadog monitor running a deterministic filter is leaking its decision boundary to you right now.
 
-A fast binary search extracts the boundary. Once mapped, a single probe at threshold x 1.005 proves the filter produces the same output every time. You hold load just above it during off-peak, and bleed their cloud bill on phantom instances that serve no real traffic.
+A fast binary search extracts the boundary. Once mapped, a verification probe at threshold x 1.005 confirms the filter produces the same output every time. You hold load just above it during off-peak, and bleed their cloud bill on phantom instances that serve no real traffic.
 
 This is the boiling frog attack. It works against every SMA, every Kalman filter, every static margin. 100% success rate. Zero detection risk. Silent.
 
@@ -65,7 +65,7 @@ make run
 | Probing success | 100% (every time) | 82.6% +/- 10.8% |
 | Per-probe burn rate | 0% (undetectable) | 17.4% |
 | P(survive 5 probes) | 100% | ~38.5% |
-| Spurious triggers | 0% | <0.001% |
+| Spurious triggers (stationary) | 0% | <0.001% |
 | False negatives | 0% | 0% |
 
 ## What the Demo Shows
@@ -105,7 +105,7 @@ defcon-boiling-frog/
 ## Conference Artifacts
 
 - [Exploit Walkthrough](EXPLOIT_WALKTHROUGH.md) -- step-by-step offensive guide
-- Video Demo -- re-recording in progress (code has changed since original capture)
+- Video Demo -- coming soon
 - [Formal Proofs (PDF)](https://github.com/asdfghjkltygh/paranoid-agent/blob/main/whitepaper.pdf) -- for the math nerds
 
 ## Why This Matters

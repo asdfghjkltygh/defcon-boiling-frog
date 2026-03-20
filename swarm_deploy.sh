@@ -25,7 +25,7 @@ BODY_TEMPLATE=$(jq -c .body swarm_config.json)
 # \\n inside f-string: literal \n for vegeta target line breaks.
 PY=$'import uuid,json,sys,signal\nsignal.signal(signal.SIGPIPE,signal.SIG_DFL)\nurl,ua,body_str=sys.argv[1],sys.argv[2],sys.argv[3]\nbody_tpl=json.loads(body_str)\nwhile True:\n    body_tpl["session_id"]=uuid.uuid4().hex\n    body=json.dumps(body_tpl)\n    print(f"POST {url}\\nUser-Agent: {ua}\\nContent-Type: application/json\\n\\n{body}\\n",flush=True)'
 
-ulimit -n 65535
+ulimit -n 65535 2>/dev/null || echo "[!] Warning: Could not raise ulimit. Sustained high RPS may cause socket exhaustion."
 
 while true; do
   python3 -c "$PY" "$URL" "$UA" "$BODY_TEMPLATE" | \

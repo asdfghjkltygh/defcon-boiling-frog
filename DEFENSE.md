@@ -15,6 +15,8 @@ If you are defending against the boiling frog extraction attack:
 6. **Pin your CloudWatch evaluation periods.** Use 3+ consecutive 1-minute data points before triggering scale-out. This forces attackers to sustain load through the full evaluation window, dramatically increasing their exposure time and detection surface.
 7. **The Goldilocks Zone** for epsilon is 0.5 to 2.0. Below 0.25, the DP noise floor exceeds the clip bounds and the agent becomes blind to real anomalies (FNR=100%). Above 2.0, noise is too low to meaningfully absorb probes.
 
+   **Streaming composition note:** Each data point participates in W sliding window outputs, so the formal epsilon-DP bound degrades to W * epsilon under basic composition (Dwork et al., 2006). At window=20 and epsilon=1.5, the streaming bound is epsilon=30. In the primary threat model the attacker observes binary scale/no-scale outcomes, not the raw noisy stream, so each probe remains an independent Bernoulli trial with ~17% absorption. If the attacker can observe continuous noisy telemetry (e.g., via a public status page), the streaming bound applies; see evasion vector 4 (Noise Fingerprinting) in the walkthrough.
+
 ## Calibration
 
 8. **Use burn-in calibration** (first 25% of clean data) to set thresholds without data leakage. The agent should never see future values when calibrating its operating point.

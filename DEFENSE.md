@@ -27,6 +27,6 @@ The DP-Governor adds sub-millisecond latency to each telemetry reading (vectoriz
 
 Note: CloudWatch Custom Metric Streams (Kinesis Firehose to Lambda to CW Custom Metric) introduce a ~60-120s propagation delay. The ASG will trail live traffic by at least a minute. For the defender, this is acceptable: the DP-Governor's goal is noise injection for probe absorption, not real-time response. The attacker must sustain probes through the full evaluation window regardless of pipeline latency.
 
-Collateral damage to legitimate operations is <0.001% false triggers (validated via 100-seed Monte Carlo across 3 NAB traces). Real anomalies are still caught at 100% detection rate.
+Collateral damage to legitimate operations is <0.001% false triggers on stationary traces (EC2 CPU, ELB request count), validated via 100-seed Monte Carlo. Non-stationary traces (RDS CPU) exhibit concept drift that inflates spurious rates across all filter types. Real anomalies are still caught at 100% detection rate.
 
 For the full DP calibration procedure, see the [technical whitepaper](https://github.com/asdfghjkltygh/paranoid-agent/blob/main/whitepaper.pdf).

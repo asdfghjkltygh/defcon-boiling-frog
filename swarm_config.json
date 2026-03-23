@@ -1,0 +1,20 @@
+{
+    "target": "api.example.com",
+    "target_url": "https://api.example.com/v1/ai/batch-inference",
+    "method": "POST",
+    "body": {
+        "batch_size": 1000,
+        "model": "resnet152",
+        "session_id": "<INJECT_UUID>"
+    },
+    "boundary_rps": 4990,
+    "max_rps": 850,
+    "cache_buster": "uuid4_hex",
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Content-Type": "application/json"
+    },
+    "attack_type": "vegeta_distributed",
+    "instances": "200x c6i.32xlarge",
+    "duration": "24h"
+}

@@ -11,7 +11,7 @@ If you are defending against the boiling frog extraction attack:
 ## Infrastructure Hardening (Terraform/CloudFormation)
 
 4. **Deploy the DP-Governor** between raw telemetry and your agent's decision logic. This is the only defense that introduces per-probe uncertainty. Deploy as a CloudWatch Metric Stream filter Lambda that injects calibrated Laplace noise before metrics reach your ASG scaling policy.
-5. **Set trigger_persistence >= 5** (consecutive breaches required before scaling). Individual DP noise spikes above p95 occur ~5% of the time; P(5 consecutive) < 1e-6. Configure via `ConsecutiveBreachesBeforeScaling` in your CloudFormation ASG template.
+5. **Set trigger_persistence >= 5** (consecutive breaches required before scaling). Individual DP noise spikes above p95 occur ~5% of the time; theoretical P(5 consecutive) ≈ 3e-7, validated empirically at <0.001% across 100-seed Monte Carlo on stationary traces. Configure via `ConsecutiveBreachesBeforeScaling` in your CloudFormation ASG template.
 6. **Pin your CloudWatch evaluation periods.** Use 3+ consecutive 1-minute data points before triggering scale-out. This forces attackers to sustain load through the full evaluation window, dramatically increasing their exposure time and detection surface.
 7. **The Goldilocks Zone** for epsilon is 0.5 to 2.0. Below 0.25, the DP noise floor exceeds the clip bounds and the agent becomes blind to real anomalies (false-negative rate hits 100%). Above 2.0, noise is too low to meaningfully absorb probes.
 
@@ -29,4 +29,4 @@ Note: CloudWatch Custom Metric Streams (Kinesis Firehose to Lambda to CW Custom 
 
 Collateral damage to legitimate operations is <0.001% false triggers on stationary traces (EC2 CPU, ELB request count), validated via 100-seed Monte Carlo. Non-stationary traces (RDS CPU) exhibit concept drift that inflates spurious rates across all filter types. Real anomalies are still caught at 100% detection rate.
 
-For the full DP calibration procedure, see the [technical whitepaper](https://github.com/asdfghjkltygh/paranoid-agent/blob/main/whitepaper.pdf).
+For the full DP calibration procedure, see the [technical whitepaper](whitepaper.pdf).

@@ -9,5 +9,4 @@ env/
 dist/
 build/
 .nab_cache/
-gemini_review_prompt.md
-defcon_review_prompt.md
+swarm_config.generated.json

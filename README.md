@@ -12,25 +12,25 @@ Every cloud auto-scaler, every Kubernetes Horizontal Pod Autoscaler (HPA), every
 
 A fast binary search extracts the boundary. Once mapped, a verification probe at threshold x 1.005 confirms the filter produces the same output every time. You hold load just above it during off-peak, and bleed their cloud bill on phantom instances that serve no real traffic.
 
-This is the boiling frog attack. It works against every simple moving average (SMA), every Kalman filter, every static margin. 100% success rate. Zero detection risk. Silent.
+This is the boiling frog attack. It works against every SMA and Kalman filter we tested, with 100% reliability. The target never sees it coming.
 
 ## What's Vulnerable
 
 Any system that makes a threshold-breach decision on deterministic-filtered telemetry. Concretely:
 
 - **AWS Auto Scaling Groups** with CloudWatch CPU alarms (the default). `PutMetricData` lets you inject custom metrics. The alarm evaluates a static threshold over a fixed number of periods. A binary search maps the boundary.
-- **Kubernetes HPA** using `metrics-server` CPU/memory targets. The HPA controller compares current vs. desired utilization using a simple ratio. Deterministic. Extractable.
+- **Kubernetes HPA** using `metrics-server` CPU/memory targets. The controller compares current to desired utilization with a simple ratio, so the behavior is deterministic and the boundary is extractable.
 - **Datadog Monitors** with threshold alerts on any metric. Query, compare, alert. No noise in the pipeline.
 - **Prometheus Alertmanager** with PromQL threshold rules. `avg_over_time(cpu_usage[5m]) > 0.8` is deterministic, same input same output.
 - **PagerDuty** threshold-based event rules. Deterministic evaluation, no jitter.
 
-If the filter is deterministic (same input, same output, every time) you can extract the boundary. That's all of them.
+If the filter is deterministic, you can extract the boundary. All of the above are.
 
-## What Exists Today
+## Prior Art
 
-Cloud red team tools (Pacu, Stratus Red Team) focus on IAM misconfigurations, credential theft, and service exploitation. Nobody is targeting the decision logic of autonomous infrastructure agents. The auto-scaler's threshold isn't a config you can read from an API; it's an emergent property of the filter pipeline. There's no `aws autoscaling describe-threshold` command.
+Cloud red team tools (Pacu, Stratus Red Team) target IAM misconfigs and credential theft. Nobody is going after the decision logic of autonomous infrastructure agents. The auto-scaler's threshold isn't a config you can read from an API; it's an emergent property of the filter pipeline. There's no `aws autoscaling describe-threshold` command. We checked.
 
-This is a new attack surface: the telemetry-to-decision pipeline itself. The tool extracts information that doesn't exist in any config file, any API response, any IAM policy.
+So the telemetry-to-decision pipeline is a new attack surface. The tool extracts information that doesn't exist in any config file or API response.
 
 ---
 
@@ -65,15 +65,15 @@ make run
 
 | Metric | Deterministic Filters | With DP-Governor Trap |
 |--------|----------------------|----------------------|
-| Probing success | 100% (every time) | 82.6% +/- 10.8% |
-| Per-probe burn rate | 0% (undetectable) | 17.4% |
-| P(survive 5 probes) | 100% | ~38.5% |
+| Probing success | 100% (every time) | 82.6% ± 10.8% |
+| Per-probe burn rate | 0% (undetectable) | 17.4% ± 10.8% |
+| P(survive 5 probes) | 100% | 38.5% (1σ range: 19%-71%) |
 | Spurious triggers (stationary) | 0% | <0.001% |
 | False negatives | 0% | 0% |
 
 ## What the Demo Shows
 
-Six phases, structured as a heist narrative:
+Six phases:
 
 1. **TARGET ACQUISITION** -- Recon on an AWS Auto Scaling Group's CPU telemetry
 2. **EXPLOIT EXECUTION** -- Binary search convergence on the decision boundary
@@ -82,11 +82,11 @@ Six phases, structured as a heist narrative:
 5. **THE TRAP IS SPRUNG** -- Target B acquired: DP-Governed auto-scaler. Exploit starts failing (SOC dual-view)
 6. **BRUTE FORCE** -- 200-probe brute-force extraction: your stealth erodes geometrically until SIEM catches you
 
-## The Trap (For the Math Nerds)
+## The Trap
 
-A Differential Privacy Governor makes the boundary probabilistic. Your probe succeeds ~83% of the time instead of 100%. The other ~17%? Your injected readings hit the SOC logs while the agent does nothing. You got zero information and burned operational cover.
+A Differential Privacy Governor makes the boundary probabilistic. Your probe succeeds about 83% of the time instead of 100%. The other 17% are absorbed: your injected readings land in the SOC logs and the agent does nothing, so you get zero information and burn operational cover on the way there.
 
-Five probes to map the boundary. By probe five, there is a >60% chance the SOC is already investigating you. A wider Kalman margin just moves the finish line. Differential Privacy turns the finish line into a minefield.
+You need five probes to map the boundary, and by probe five there's more than a 60% chance the SOC is already investigating you. Widening the Kalman margin just moves the finish line. DP turns the finish line into a minefield.
 
 ## Repository Structure
 
@@ -110,18 +110,18 @@ defcon-boiling-frog/
 
 - [Exploit Walkthrough](EXPLOIT_WALKTHROUGH.md) -- step-by-step offensive guide
 - Live demo on stage (no pre-recorded video; run `make attack` to see it)
-- [Formal Proofs (PDF)](whitepaper.pdf) -- for the math nerds
+- [Formal Proofs (PDF)](whitepaper.pdf)
 
-## Why This Matters
+## So what
 
-A compromised auto-scaler threshold means the attacker controls when your infrastructure scales. Hold load just above the threshold during off-peak: phantom instances spin up and stay up. The auto-scaler did exactly what it was designed to do, and you're paying for a fleet that serves no real traffic. The attacker extracts the boundary with a short binary search, and your deterministic filter gives them the same answer every time they ask.
+Once an attacker has your auto-scaler's threshold, they control when your infrastructure scales. Hold load just above that number during off-peak and phantom instances spin up. They stay up, because scale-in cooldown never triggers. Your deterministic filter gives the attacker the same answer every time they ask, so the boundary never changes.
 
-No log entry, no alert. The filter did exactly what it was supposed to.
+No log entry. No alert. The filter worked correctly; that's the problem.
 
 ## Limitations
 
 - **Requires telemetry injection.** If the attacker can't influence the metric the agent reads (e.g., no `PutMetricData` access, no ability to generate load), the attack doesn't apply.
-- **Assumes deterministic filter pipeline.** Systems that already add random jitter to scaling decisions (rare in production, but they exist) are partially resistant.
+- **Jittered pipelines are partially resistant.** Some systems already add random jitter to scaling decisions; this is rare in production but it does exist (e.g., some custom Chaos Engineering deployments).
 - **Sub-millisecond systems are out of scope.** HFT engines and inline packet inspectors operate on timescales where even 0.2ms matters. This targets infrastructure agents with 5s to 5min polling intervals.
 - **Multi-variate cross-correlation.** If the target monitors multiple correlated metrics simultaneously, injecting a probe on one metric without matching the others could be detectable.
 

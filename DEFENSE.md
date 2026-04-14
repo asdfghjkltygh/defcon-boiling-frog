@@ -1,7 +1,5 @@
 # Detection Engineering & Infrastructure Hardening
 
-If you are defending against the boiling frog extraction attack:
-
 ## SIEM Detection Logic
 
 1. **Alert on repeated near-threshold readings.** Clusters of telemetry values within 2% of your scaling threshold are almost certainly probes. Write a Splunk/Elastic correlation rule that fires when 3+ readings land in this band within a 10-minute window.
@@ -23,7 +21,7 @@ If you are defending against the boiling frog extraction attack:
 
 ## Performance
 
-The DP-Governor adds sub-millisecond latency to each telemetry reading (vectorized numpy on typical hardware). This is negligible compared to the 5-second to 5-minute polling intervals used by AWS CloudWatch, Kubernetes HPA, and similar infrastructure agents. SMA and Kalman filters in the same pipeline typically cost 1-15ms for comparison. The trap costs nothing operationally.
+The DP-Governor adds sub-millisecond latency to each telemetry reading (vectorized numpy on typical hardware). That's negligible next to the 5-second to 5-minute polling intervals these agents use. For reference, the SMA and Kalman filters in the same pipeline cost 1-15ms. The trap is essentially free.
 
 Note: CloudWatch Custom Metric Streams (Kinesis Firehose to Lambda to CW Custom Metric) introduce a ~60-120s propagation delay. The ASG will trail live traffic by at least a minute. For the defender, this is acceptable: the DP-Governor's goal is noise injection for probe absorption, not real-time response. The attacker must sustain probes through the full evaluation window regardless of pipeline latency.
 

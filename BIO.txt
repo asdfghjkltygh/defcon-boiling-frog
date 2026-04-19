@@ -1,0 +1,8 @@
+[YOUR NAME OR HANDLE]
+
+[2-3 sentences: your role, employer or independent, relevant
+background in cloud security / infrastructure / offensive research.
+Mention any prior conference talks, published tools, or relevant
+open-source contributions. If pseudonymous, say so.]
+
+Contact: [email]

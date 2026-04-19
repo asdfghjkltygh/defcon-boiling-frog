@@ -1,0 +1,26 @@
+Boiling Frog: Extracting and Trapping Cloud Auto-Scalers
+
+Cloud auto-scalers, Kubernetes HPAs, and monitoring-driven scaling policies
+all share a property their operators don't think about: the decision boundary
+between "do nothing" and "scale out" is a deterministic function of filtered
+telemetry. If the filter pipeline is deterministic, and in production it
+almost always is, that boundary is extractable via binary search.
+
+This tool demonstrates the extraction attack end-to-end. Seven probes map
+the scaling threshold of an AWS Auto Scaling Group running SMA, Kalman, or
+raw-passthrough filters, with 100% success and zero detection surface. The
+extracted boundary is then weaponized into a Denial of Wallet attack:
+holding load just above the threshold during off-peak forces phantom
+instances that serve no real traffic, projecting to ~$1.01M/mo in
+damages at 850 RPS sustained.
+
+The tool also ships a defense: a Differential Privacy Governor that injects
+calibrated Laplace noise into the telemetry pipeline, making the boundary
+probabilistic. Each attacker probe now independently carries a 17.4%
+chance of being absorbed, visible to the SOC, invisible to the attacker.
+After five probes, cumulative detection probability exceeds 60%. The
+defense adds sub-millisecond latency and produces <0.001% spurious
+triggers on stationary traces.
+
+We release the full exploit, the defense, a 200-probe Monte Carlo
+evaluation, and a 5-minute interactive demo.

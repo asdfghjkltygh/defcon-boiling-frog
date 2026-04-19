@@ -1,0 +1,162 @@
+BOILING FROG: EXTRACTING AND TRAPPING CLOUD AUTO-SCALERS
+Detailed Outline -- DEF CON 34 Demo Labs Submission
+Track: Demo Labs
+Requested time slot: 45 minutes (30 min presentation + 15 min Q&A)
+
+
+OPENING (3 min)
+
+I open with the question: what happens when you send exactly 4,991
+requests per second to an auto-scaled API instead of 4,990? The
+answer is that you just doubled someone's cloud bill, and nobody
+logged it, because the auto-scaler did exactly what it was designed
+to do. I frame this as a new attack surface that doesn't appear in
+any IAM policy, any config API, or any red-team playbook. The
+decision boundary between "do nothing" and "scale out" is an emergent
+property of the filter pipeline, and if that pipeline is
+deterministic, the boundary leaks.
+
+I give a 30-second overview of the tool: an extraction attack (binary
+search against deterministic filters), a weaponization stage (Denial
+of Wallet via phantom instances), and a defense (Differential Privacy
+noise injection that turns each probe into a detection risk). Then I
+run the demo live.
+
+
+LIVE DEMO -- EXTRACTION ATTACK (8 min)
+
+I run "make attack" on my laptop. The demo loads real AWS CloudWatch
+CPU telemetry from the Numenta Anomaly Benchmark and derives a
+threshold using DP-aware calibration. I walk through each phase as
+it runs:
+
+  Phase 1 (Target Acquisition): I explain what the simulated
+  auto-scaler is doing: a CloudWatch alarm evaluating a static CPU
+  threshold over a fixed number of periods. I point out that this is
+  the default AWS ASG configuration and that Kubernetes HPA, Datadog
+  Monitors, and Prometheus Alertmanager all work the same way.
+
+  Phase 2 (Binary Search): The screen shows a 7-step binary search
+  converging on the scaling boundary. Each probe injects a controlled
+  signal and checks whether the agent triggers. I explain that this
+  is one bit of information per probe, and that the attacker needs
+  log2(range/precision) probes total. I emphasize that the binary
+  search calls the real SMA filter on real data, nothing is
+  theatrical.
+
+  Phase 3 (All Filters Defeated): The extracted boundary is tested
+  against Naive (passthrough), SMA, and Kalman filters. All three
+  produce identical output for identical input. I make the point:
+  deterministic means extractable, and extractable means exploitable.
+
+
+LIVE DEMO -- WEAPONIZATION (4 min)
+
+  Phase 4 (Denial of Wallet): I show the cost projection. The tool
+  computes Little's Law (850 RPS x 30.1s = 25,585 vCPUs), tiered AWS
+  egress pricing, and CloudFront HTTP request costs. Grand total:
+  ~$1.01M/month. I explain the swarm_config.json and swarm_deploy.sh
+  files: how the exploit payload gets deployed across C2 nodes using
+  vegeta for load generation with per-request UUID cache-busting.
+
+  I pause here and explain that everything up to this point works
+  against every production auto-scaler I've tested. The attack
+  surface is real and currently undefended.
+
+
+LIVE DEMO -- THE DEFENSE (8 min)
+
+  Phase 5 (DP-Governor): I switch to Target B, a DP-Governed
+  auto-scaler. The same probe is run 5 times. Some runs succeed
+  (noise didn't break the consecutive-breach chain); some are
+  absorbed (noise pushed enough readings below threshold, and the
+  SOC sees the attacker's elevated readings with no corresponding
+  scale event). I show the dual-perspective SOC view.
+
+  Phase 6 (Brute Force): A 200-probe Monte Carlo extraction attempt.
+  Each probe independently risks detection. I show the cumulative
+  survival probability decaying geometrically. By probe 20, detection
+  probability exceeds 97%. The SIEM fires, the IP is flagged, the
+  terminal prints ^C^C^C^C.
+
+  I close the demo with: "The boundary is a minefield. You are out
+  of stealth."
+
+
+TECHNICAL DEEP DIVE (5 min)
+
+With the demo finished, I explain the DP math. I cover:
+
+  - Laplace mechanism: sensitivity = (clip_hi - clip_lo) / window,
+    noise ~ Laplace(0, sensitivity / epsilon). I explain why
+    epsilon between 0.5 and 2.0 is the Goldilocks zone.
+
+  - Gaussian mechanism for correlated metrics: L2-norm clipping
+    before noise injection (Abadi et al., 2016). I explain why
+    raw heterogeneous scales are invalid and StandardScaler
+    normalization is required.
+
+  - Hysteresis gate: trigger_persistence=5 consecutive breaches
+    required. P(5 consecutive false breaches) < 0.001% on
+    stationary traces.
+
+  - Streaming composition: each data point participates in W
+    sliding-window outputs, so formal epsilon degrades to W*epsilon.
+    I explain why this is acceptable in the binary-outcome threat
+    model and where it breaks (public status pages exposing
+    continuous noisy telemetry).
+
+
+EVASION VECTORS AND LIMITATIONS (2 min)
+
+I briefly cover the six evasion vectors from the walkthrough:
+sawtooth probing, slow drip, multi-vector inference, noise
+fingerprinting, threshold hugging, and Bayesian estimation. For
+each one I state why the geometric stealth decay still applies.
+I acknowledge the limitations: requires telemetry injection access,
+assumes deterministic pipeline, sub-millisecond systems are out of
+scope.
+
+
+CLOSING AND CALL TO ACTION (2 min, ~30 min mark)
+
+I tell the audience three things:
+
+  1. If you run a deterministic auto-scaler (you probably do), your
+     scaling boundary is extractable right now. Run the tool against
+     your own infrastructure.
+
+  2. The DP-Governor is the only defense I've found that introduces
+     per-probe uncertainty. It's 50 lines of numpy. Deploy it as a
+     CloudWatch Metric Stream filter Lambda.
+
+  3. The repo is MIT-licensed and live on GitHub. Contributions
+     welcome, especially ports to Kubernetes HPA and Datadog
+     monitors.
+
+
+Q&A (15 min)
+
+Open floor. I expect questions on: real-world deployment
+feasibility, streaming DP composition bounds, whether the Bayesian
+attacker can beat the defense with enough patience, and how this
+interacts with existing cloud WAF / DDoS protection.
+
+
+EQUIPMENT REQUIREMENTS
+
+Standard Demo Labs setup (projector, screen, mic, internet) is
+sufficient. I will bring my own laptop. The demo runs fully offline
+after initial dataset fetch (cached in .nab_cache/). No live cloud
+account or network access is required during the presentation. Font
+size in terminal output is set to be readable on a projector
+(matplotlib rcParams font.size=22, terminal typewriter at default
+size).
+
+
+SUPPORTING MATERIALS
+
+- Source code: https://github.com/asdfghjkltygh/defcon-boiling-frog
+- Full evaluation output (6 plots, 2 CSVs): generated by "make run"
+- Technical whitepaper: whitepaper.pdf (attached)
+- Bibliography: BIBLIOGRAPHY.md
